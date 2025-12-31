@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 3000;
 // আপনার গোপন তথ্যগুলো এখানে বসান
 // ==========================================
 const VERIFY_TOKEN = "my_secret_token_123"; 
-const PAGE_ACCESS_TOKEN = "আপনার_ফেসবুক_পেইজ_এক্সেস_টোকেন"; 
-const GEMINI_API_KEY = "আপনার_GEMINI_API_KEY_এখানে_দিন"; 
+const PAGE_ACCESS_TOKEN = "EAAWE8yA3hsIBQeyMnQCZBE5iJAYyZCqjJiL1AYvsIjwBFCWmn6hz1uH897q9fZCuAF5ZCZC2GyMhJW6UJNZCvWnOJa8bwRbejN8sCI6ZC4TwpuqZBGLSVvC2SWVAOMFdifVN60Eq4ilE1DkGrjIPOLDAJ1usCyPhdwvbUUmcHWnLx4FRXRZBJSErYDRhCHM1jNzwh1vjfNQZDZD"; 
+const GEMINI_API_KEY = "AIzaSyDGF8uh5wCMPv9Ex3Y67iD-HpixbsQq3Zo"; 
 
 // Gemini সেটআপ
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
