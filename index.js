@@ -6,14 +6,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==========================================
-// আপনার গোপন তথ্য
+// আপনার গোপন তথ্যগুলো এখানে বসান
 // ==========================================
 const VERIFY_TOKEN = "my_secret_token_123"; 
 const PAGE_ACCESS_TOKEN = "EAAWE8yA3hsIBQW48mMIHgJn14z2iThsZBa8EjOuomoBQOeZCyrINWDcJVlT4b1pwZAJLbkZAaKBVcJFCY8A5j23qJlQHiPmmlSImUqkEZA1umMFfjUSfF9ZCscIgReg9bJ7iBT0eTHk46xAOO8W5isjHClA5YMrYNASMV2Vqv0GXHV5kCjZC4nzQuHfWZBmmHx4LuQdr4AZDZD"; 
 const GEMINI_API_KEY = "AIzaSyBjnbUUh_IPOUl9r5tlCgJHsEyrqw62kKM"; 
 
-// [সমাধান] আমরা এখন সবচেয়ে নিরাপদ এবং ফ্রি মডেল ব্যবহার করছি
-const MODEL_NAME = "gemini-1.5-flash"; 
+// আপনার লিস্ট থেকে পাওয়া লেটেস্ট মডেল
+const MODEL_NAME = "gemini-2.0-flash"; 
 // ==========================================
 
 const SYSTEM_PROMPT = "তুমি ইকোনমিস্ট বট। বাংলায় ছোট করে উত্তর দাও।";
@@ -35,7 +35,7 @@ app.get("/webhook", (req, res) => {
   }
 });
 
-// মেসেজ হ্যান্ডলিং
+// মেসেজ হ্যান্ডলিং (Vercel ফিক্স: আগে কাজ, পরে রেসপন্স)
 app.post("/webhook", async (req, res) => {
   const body = req.body;
 
@@ -51,12 +51,12 @@ app.post("/webhook", async (req, res) => {
 
           console.log(`User says: ${userMessage}`);
 
-          // অপেক্ষা করা (await)
+          // আমরা এখানে await করছি যাতে কাজ শেষ না হওয়া পর্যন্ত সার্ভার বন্ধ না হয়
           await handleFullConversation(sender_psid, userMessage);
         }
       }
       
-      // সব শেষে রেসপন্স
+      // সব কাজ শেষ, এখন ফেসবুককে বিদায় জানানো
       res.status(200).send("EVENT_RECEIVED");
 
     } catch (error) {
@@ -68,51 +68,60 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
+// পুরো কথোপকথন হ্যান্ডেল করার ফাংশন
 async function handleFullConversation(sender_psid, userMessage) {
   try {
+    // ১. টাইপিং অন
     await sendAction(sender_psid, "typing_on");
 
-    // Gemini কল (v1beta ব্যবহার করা হচ্ছে)
+    // ২. Gemini কল (সরাসরি লিঙ্ক)
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
-    
     const payload = {
       contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\nUser: ${userMessage}\nAssistant:` }] }]
     };
 
+    console.log("Calling Gemini...");
     const response = await axios.post(geminiUrl, payload, {
       headers: { 'Content-Type': 'application/json' }
     });
 
+    // উত্তর সাজানো
     let botReply = "দুঃখিত, উত্তর তৈরি করা যায়নি।";
     if (response.data.candidates && response.data.candidates.length > 0) {
       botReply = response.data.candidates[0].content.parts[0].text;
     }
     console.log("Gemini Replied:", botReply);
 
+    // ৩. টাইপিং অফ
     await sendAction(sender_psid, "typing_off");
+
+    // ৪. মেসেজ পাঠানো
     await sendMessage(sender_psid, { text: botReply });
 
   } catch (error) {
-    // এরর ডিটেইলস
     console.error("Process Failed:", error.message);
+    // Gemini ফেল করলে ইউজারকে জানানো
     if(error.response) {
         console.error("Gemini Error Detail:", JSON.stringify(error.response.data));
     }
-    await sendMessage(sender_psid, { text: "সার্ভারে একটু সমস্যা হচ্ছে, পরে চেষ্টা করুন।" });
+    await sendMessage(sender_psid, { text: "সার্ভারে সমস্যা হচ্ছে, পরে চেষ্টা করুন।" });
   }
 }
 
+// ফেসবুক সেন্ড ফাংশন
 async function sendMessage(id, msg) {
   try {
     await axios.post(
       `https://graph.facebook.com/v19.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
       { recipient: { id }, message: msg }
     );
+    console.log("Message Sent to Facebook!");
   } catch (error) {
-    console.error("FB Send Error:", error.message);
+    console.error("FB Send Error:", error.response ? error.response.data : error.message);
   }
 }
 
+// টাইপিং অ্যাকশন
 async function sendAction(id, action) {
   try {
     await axios.post(
