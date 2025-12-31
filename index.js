@@ -86,7 +86,7 @@ async function handleGeminiResponse(sender_psid, userMessage) {
     await sendTypingAction(sender_psid, "typing_on");
 
     // ২. Gemini কল করা
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     const prompt = `${SYSTEM_INSTRUCTION}\n\nUser asked: ${userMessage}\nAnswer:`;
 
     const result = await model.generateContent(prompt);
