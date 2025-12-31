@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 // ==========================================
 const VERIFY_TOKEN = "my_secret_token_123"; 
 const PAGE_ACCESS_TOKEN = "EAAWE8yA3hsIBQW48mMIHgJn14z2iThsZBa8EjOuomoBQOeZCyrINWDcJVlT4b1pwZAJLbkZAaKBVcJFCY8A5j23qJlQHiPmmlSImUqkEZA1umMFfjUSfF9ZCscIgReg9bJ7iBT0eTHk46xAOO8W5isjHClA5YMrYNASMV2Vqv0GXHV5kCjZC4nzQuHfWZBmmHx4LuQdr4AZDZD"; 
-const GEMINI_API_KEY = "AIzaSyDGF8uh5wCMPv9Ex3Y67iD-HpixbsQq3Zo"; 
+const GEMINI_API_KEY = "AIzaSyAAU6T0N6Tyh6wAgFrgPlzudmKJ6DMqG0Y"; 
 
 // আপনার লিস্ট থেকে পাওয়া লেটেস্ট মডেল
 const MODEL_NAME = "gemini-2.0-flash"; 
