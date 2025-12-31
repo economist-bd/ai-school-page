@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const axios = require("axios");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,26 +9,26 @@ const PORT = process.env.PORT || 3000;
 // ==========================================
 // আপনার গোপন তথ্যগুলো এখানে বসান
 // ==========================================
-const VERIFY_TOKEN = "my_secret_token_123"; // আপনার আগের ভেরিফাই টোকেন
-const PAGE_ACCESS_TOKEN = "EAAWE8yA3hsIBQeyMnQCZBE5iJAYyZCqjJiL1AYvsIjwBFCWmn6hz1uH897q9fZCuAF5ZCZC2GyMhJW6UJNZCvWnOJa8bwRbejN8sCI6ZC4TwpuqZBGLSVvC2SWVAOMFdifVN60Eq4ilE1DkGrjIPOLDAJ1usCyPhdwvbUUmcHWnLx4FRXRZBJSErYDRhCHM1jNzwh1vjfNQZDZD"; // ধাপ ১-এ পাওয়া লম্বা টোকেন
-const OPENAI_API_KEY = "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"; // ধাপ ১-এ পাওয়া OpenAI Key
+const VERIFY_TOKEN = "my_secret_token_123"; 
+const PAGE_ACCESS_TOKEN = "আপনার_ফেসবুক_পেইজ_এক্সেস_টোকেন"; 
+const GEMINI_API_KEY = "আপনার_GEMINI_API_KEY_এখানে_দিন"; 
 
-// ==========================================
+// Gemini সেটআপ
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+
 // বট-এর চরিত্র (System Prompt)
-// ==========================================
-const BOT_PERSONALITY = `
+const SYSTEM_INSTRUCTION = `
 তুমি হলে মঞ্জুরুল হকের পার্সোনাল অ্যাসিস্ট্যান্ট। 
-মঞ্জুরুল হক একজন অর্থনীতির প্রভাষক, গ্রাফিক্স ডিজাইনার এবং ওয়েব ডেভেলপার। 
-তার একটি ইউটিউব চ্যানেল আছে যার নাম "Economist"।
-তুমি সবার সাথে খুব বিনয়ের সাথে বাংলায় কথা বলবে। কেউ কোর্সের কথা জানতে চাইলে বলবে বিস্তারিত শীঘ্রই জানানো হবে।
-খুব ছোট এবং সুন্দর করে উত্তর দেবে।
+তোমার নাম ইকোনমিস্ট বট।
+তুমি সবার সাথে খুব বিনয়ের সাথে বাংলায় কথা বলবে।
+উত্তরগুলো খুব ছোট এবং সহজ ভাষায় দেবে (মেসেঞ্জারের জন্য উপযোগী)।
 `;
 
 app.use(bodyParser.json());
 
 // রুট চেক
 app.get("/", (req, res) => {
-  res.send("AI Chatbot Server is Running!");
+  res.send("Gemini Chatbot Server is Running!");
 });
 
 // ফেসবুক ভেরিফিকেশন
@@ -51,7 +52,7 @@ app.post("/webhook", (req, res) => {
   const body = req.body;
 
   if (body.object === "page") {
-    // ফেসবুককে সাথে সাথে জানিয়ে দিই যে আমরা মেসেজ পেয়েছি (Timeout ঠেকানোর জন্য)
+    // ফেসবুককে সাথে সাথে জানিয়ে দেওয়া (Timeout ঠেকানোর জন্য)
     res.status(200).send("EVENT_RECEIVED");
 
     body.entry.forEach((entry) => {
@@ -63,8 +64,8 @@ app.post("/webhook", (req, res) => {
 
         console.log(`User says: ${userMessage}`);
 
-        // AI এর কাছে পাঠানো এবং রিপ্লাই দেওয়া
-        handleAIResponse(sender_psid, userMessage);
+        // Gemini এর কাছে পাঠানো
+        handleGeminiResponse(sender_psid, userMessage);
       }
     });
   } else {
@@ -72,43 +73,33 @@ app.post("/webhook", (req, res) => {
   }
 });
 
-// AI এবং রিপ্লাই হ্যান্ডলার
-async function handleAIResponse(sender_psid, userMessage) {
+// Gemini এবং রিপ্লাই হ্যান্ডলার
+async function handleGeminiResponse(sender_psid, userMessage) {
   try {
-    // ১. টাইপিং ইন্ডিকেটর দেখানো (মানে বট লিখছে...)
+    // ১. টাইপিং ইন্ডিকেটর দেখানো
     await sendTypingAction(sender_psid, "typing_on");
 
-    // ২. OpenAI (ChatGPT) কে প্রশ্ন পাঠানো
-    const aiResponse = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-3.5-turbo", // অথবা "gpt-4o-mini" (কম খরচে ভালো)
-        messages: [
-          { role: "system", content: BOT_PERSONALITY }, // বটের চরিত্র
-          { role: "user", content: userMessage } // ইউজারের প্রশ্ন
-        ],
-        max_tokens: 150 // উত্তরের দৈর্ঘ্য লিমিট
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENAI_API_KEY}`
-        }
-      }
-    );
+    // ২. Gemini মডেল কল করা
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // ফাস্ট এবং স্মার্ট মডেল
 
-    const botReply = aiResponse.data.choices[0].message.content;
+    // ৩. প্রম্পট তৈরি করা (সিস্টেম ইন্সট্রাকশন সহ)
+    const prompt = `${SYSTEM_INSTRUCTION}\n\nUser asked: ${userMessage}\nAnswer:`;
 
-    // ৩. টাইপিং বন্ধ করা
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const botReply = response.text();
+
+    console.log(`Gemini Replied: ${botReply}`);
+
+    // ৪. টাইপিং বন্ধ করা
     await sendTypingAction(sender_psid, "typing_off");
 
-    // ৪. মেসেজ পাঠানো
+    // ৫. মেসেজ পাঠানো
     await callSendAPI(sender_psid, { text: botReply });
 
   } catch (error) {
-    console.error("Error from OpenAI or Facebook:", error.message);
-    // এরর হলে একটি সাধারণ মেসেজ পাঠানো
-    await callSendAPI(sender_psid, { text: "দুঃখিত, আমি এখন একটু ব্যস্ত। পরে আবার চেষ্টা করুন।" });
+    console.error("Error from Gemini or Facebook:", error.message);
+    await callSendAPI(sender_psid, { text: "দুঃখিত, একটু সমস্যা হচ্ছে। পরে আবার চেষ্টা করুন।" });
   }
 }
 
@@ -123,7 +114,7 @@ async function callSendAPI(sender_psid, response) {
       }
     );
   } catch (error) {
-    console.error("Failed to send message:", error.message);
+    console.error("Failed to send message:", error.response ? error.response.data : error.message);
   }
 }
 
@@ -138,10 +129,10 @@ async function sendTypingAction(sender_psid, action) {
       }
     );
   } catch (error) {
-    // টাইপিং এরর ইগনোর করা যেতে পারে
+    // ইগনোর করা যেতে পারে
   }
 }
 
 app.listen(PORT, () => {
-  console.log(`AI Bot listening on port ${PORT}`);
+  console.log(`Gemini Bot listening on port ${PORT}`);
 });
