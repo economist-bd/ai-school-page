@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 // আপনার গোপন তথ্যগুলো এখানে বসান
 // ==========================================
 const VERIFY_TOKEN = "my_secret_token_123"; 
-const PAGE_ACCESS_TOKEN = "EAAWE8yA3hsIBQeyMnQCZBE5iJAYyZCqjJiL1AYvsIjwBFCWmn6hz1uH897q9fZCuAF5ZCZC2GyMhJW6UJNZCvWnOJa8bwRbejN8sCI6ZC4TwpuqZBGLSVvC2SWVAOMFdifVN60Eq4ilE1DkGrjIPOLDAJ1usCyPhdwvbUUmcHWnLx4FRXRZBJSErYDRhCHM1jNzwh1vjfNQZDZD"; 
+const PAGE_ACCESS_TOKEN = "EAAWE8yA3hsIBQW48mMIHgJn14z2iThsZBa8EjOuomoBQOeZCyrINWDcJVlT4b1pwZAJLbkZAaKBVcJFCY8A5j23qJlQHiPmmlSImUqkEZA1umMFfjUSfF9ZCscIgReg9bJ7iBT0eTHk46xAOO8W5isjHClA5YMrYNASMV2Vqv0GXHV5kCjZC4nzQuHfWZBmmHx4LuQdr4AZDZD"; 
 const GEMINI_API_KEY = "AIzaSyDGF8uh5wCMPv9Ex3Y67iD-HpixbsQq3Zo"; 
 
 // Gemini সেটআপ
