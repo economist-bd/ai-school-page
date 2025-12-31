@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 // আপনার গোপন তথ্যগুলো এখানে বসান
 // ==========================================
 const VERIFY_TOKEN = "my_secret_token_123"; // আপনার আগের ভেরিফাই টোকেন
-const PAGE_ACCESS_TOKEN = "1fc371879fb051a62049881ea511a83b"; // ধাপ ১-এ পাওয়া লম্বা টোকেন
+const PAGE_ACCESS_TOKEN = "EAAWE8yA3hsIBQeyMnQCZBE5iJAYyZCqjJiL1AYvsIjwBFCWmn6hz1uH897q9fZCuAF5ZCZC2GyMhJW6UJNZCvWnOJa8bwRbejN8sCI6ZC4TwpuqZBGLSVvC2SWVAOMFdifVN60Eq4ilE1DkGrjIPOLDAJ1usCyPhdwvbUUmcHWnLx4FRXRZBJSErYDRhCHM1jNzwh1vjfNQZDZD"; // ধাপ ১-এ পাওয়া লম্বা টোকেন
 const OPENAI_API_KEY = "AIzaSyDGF8uh5wCMPv9Ex3Y67iD-HpixbsQq3Zo"; // ধাপ ১-এ পাওয়া OpenAI Key
 
 // ==========================================
